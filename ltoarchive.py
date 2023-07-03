@@ -6,26 +6,30 @@ from ltoservices.tape import tapeService
 from ltoservices.domain import domainService
 from ltoservices.content import contentService
 from ltoservices.project import projectService
-
+import uuid
+import hashlib
+import base64
 
 class LTOArchive():
 
     def __init__( self, server ):
         self.server = server
-        self.key= ""
+        self.accessToken= "55347027-1597-49ba-9985-ef3bad342fba"
+        self.appSecret="f8f508ac-5680-4a45-83e4-4beff87525eb"
         self.tape = tapeService( self )
         self.domain = domainService( self )
         self.content = contentService( self )
         self.project = projectService( self )
 
     
-    def sendRequest( self, method, uri, data=None, filedata=None ):
+    def sendRequest( self, method, uri, data=None, filedata=None, auth=False ):
         buffer = BytesIO()
         c = pycurl.Curl()
         c.setopt( c.URL, "%s%s" % ( self.server, uri ) );
+        headers = []
         if method == 'POST':
             c.setopt( c.POST, True );
-            c.setopt( c.HTTPHEADER, [ 'Content-Type: multipart/form-data' ] );
+            headers.append( 'Content-Type: multipart/form-data' )
             if data:
                 c.setopt( c.POSTFIELDS, data );
         elif method == 'PATCH' or method == 'PUT' or method == "DELETE":
@@ -35,13 +39,21 @@ class LTOArchive():
             pass
 #           c.setopt( c.URL, "%s%s" % ( self.server, uri ) );
 
-        c.setopt( c.HTTPHEADER, [ 'X-AccessKey: %s' % ( self.key ) ] );
+        if auth:
+            queryGuid = uuid.uuid4();
+            sha = hashlib.sha1()
+            sha.update( ( '%s--%s' % ( queryGuid, self.appSecret ) ).encode('ascii') )
+            signature = base64.b64encode( sha.digest() ).decode( 'ascii' ) 
+            headers.append( 'X-AccessToken: %s' % ( self.accessToken ) );
+            headers.append( 'X-QueryGuid: %s' % ( queryGuid ) );
+            headers.append( 'X-Signature: %s' % ( signature )  );
         #c.setopt( c..RETURNTRANSFER, true );
         c.setopt( c.VERBOSE, 0 );
         c.setopt( c.HEADER, 1 );
         c.setopt( c.WRITEDATA, buffer )
         c.setopt( c.SSL_VERIFYPEER, 1 )
         c.setopt( c.SSL_VERIFYHOST, 2 )
+        c.setopt( c.HTTPHEADER, headers );
         if filedata:
             for f in filedata.keys():
                 c.setopt( c.HTTPPOST, [ ( f, ( c.FORM_FILE, filedata[f] ) ) ] )

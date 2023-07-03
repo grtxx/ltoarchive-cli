@@ -19,5 +19,11 @@ class tapeService(BaseService):
 
     def updateContent( self, label ):
         dt = {}
-        data = self.LTO.sendRequest( 'PATCH', "/api/v1/tape/%s/updatecontent" % ( label ), data=dt )
+        data = self.LTO.sendRequest( 'PATCH', "/api/v1/tape/%s/updatecontent" % ( label ), data=dt, auth=True )
+        return data["data"]
+
+
+    def drop( self, label ):
+        dt = {}
+        data = self.LTO.sendRequest( 'DELETE', "/api/v1/tape/%s/drop" % ( label ), data=dt )
         return data["data"]

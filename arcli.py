@@ -81,6 +81,10 @@ def tapeCommands( settings ):
     if settings.getCommand(1) == "updatecontent":
         print( LTO.tape.updateContent( settings.getCommand(2) ) )
 
+    if settings.getCommand(1) == "drop":
+        if settings.getCommand(2) != "":
+            print( LTO.tape.drop( settings.getCommand(2) ) )
+
 
 def projectCommands( settings ):
     LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
