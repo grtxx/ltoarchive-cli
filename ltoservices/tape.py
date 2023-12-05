@@ -13,8 +13,8 @@ class tapeService(BaseService):
 
     def create( self, label, copyNumber ):
         dt = { 'label': label, 'copyNumber': copyNumber }
-        data = self.LTO.sendRequest( 'PUT', "/api/v1/tape/new", data=dt )
-        return data["data"]["data"]
+        data = self.LTO.sendRequest( 'PUT', "/api/v1/tape/new", data=dt, auth=True )
+        return data["data"]
 
 
     def updateContent( self, label ):
@@ -25,5 +25,17 @@ class tapeService(BaseService):
 
     def drop( self, label ):
         dt = {}
-        data = self.LTO.sendRequest( 'DELETE', "/api/v1/tape/%s/drop" % ( label ), data=dt )
+        data = self.LTO.sendRequest( 'DELETE', "/api/v1/tape/%s/drop" % ( label ), data=dt, auth=True )
+        return data["data"]
+
+
+    def getWorkerCount( self ):
+        dt = {}
+        data = self.LTO.sendRequest( 'GET', "/api/v1/tape/workercount", data=dt, auth=True )
+        return data["data"]
+
+
+    def setWorkerCount( self, wc ):
+        dt = { 'worker-count': wc }
+        data = self.LTO.sendRequest( 'PATCH', "/api/v1/tape/workercount", data=dt, auth=True )
         return data["data"]

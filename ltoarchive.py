@@ -6,6 +6,7 @@ from ltoservices.tape import tapeService
 from ltoservices.domain import domainService
 from ltoservices.content import contentService
 from ltoservices.project import projectService
+from ltoservices.job import jobService
 import uuid
 import hashlib
 import base64
@@ -20,6 +21,7 @@ class LTOArchive():
         self.domain = domainService( self )
         self.content = contentService( self )
         self.project = projectService( self )
+        self.job = jobService( self )
 
     
     def sendRequest( self, method, uri, data=None, filedata=None, auth=False ):

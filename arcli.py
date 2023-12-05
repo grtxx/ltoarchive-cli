@@ -69,6 +69,12 @@ def domainCommands( settings ):
             print( LTO.domain.drop( settings.getCommand(2) ) )
 
 
+def jobCommands( settings ):
+    LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
+    if settings.getCommand(1) == "list":
+        print( json.dumps( LTO.job.list(), indent=4 ) )
+
+
 def tapeCommands( settings ):
     LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
     if settings.getCommand(1) == "list":
@@ -84,6 +90,12 @@ def tapeCommands( settings ):
     if settings.getCommand(1) == "drop":
         if settings.getCommand(2) != "":
             print( LTO.tape.drop( settings.getCommand(2) ) )
+
+    if settings.getCommand(1) == "workercount":
+        if ( settings.getCommand(2) == "get" ):
+            print( LTO.tape.getWorkerCount() )
+        elif ( settings.getCommand(2) == "set" ):
+            print( LTO.tape.setWorkerCount( settings.getCommand(3) ) )
 
 
 def projectCommands( settings ):
@@ -101,6 +113,8 @@ def router():
         tapeCommands( settings )
     if ( settings.getCommand(0) == "project" ):
         projectCommands( settings )
+    if ( settings.getCommand(0) == "job" ):
+        jobCommands( settings )
 
 
 router()
