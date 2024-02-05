@@ -87,6 +87,9 @@ def tapeCommands( settings ):
     if settings.getCommand(1) == "updatecontent":
         print( LTO.tape.updateContent( settings.getCommand(2) ) )
 
+    if settings.getCommand(1) == "clone":
+        print( LTO.tape.clone( settings.getCommand(2), settings.getCommand(3) ) )
+
     if settings.getCommand(1) == "drop":
         if settings.getCommand(2) != "":
             print( LTO.tape.drop( settings.getCommand(2) ) )
@@ -104,6 +107,14 @@ def projectCommands( settings ):
         print( LTO.project.check( settings.get('domain'), settings.getCommand(2) ) )
 
 
+def systemCommands( settings ):
+    LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
+    if settings.getCommand(1) == "destinations":
+        print( LTO.system.destinations() )
+    elif settings.getCommand(1) == "tasks":
+        print( LTO.system.tasks() )
+
+
 
 def router():
     settings = Settings()
@@ -115,6 +126,8 @@ def router():
         projectCommands( settings )
     if ( settings.getCommand(0) == "job" ):
         jobCommands( settings )
+    if ( settings.getCommand(0) == "system" ):
+        systemCommands( settings )
 
 
 router()

@@ -7,6 +7,7 @@ from ltoservices.domain import domainService
 from ltoservices.content import contentService
 from ltoservices.project import projectService
 from ltoservices.job import jobService
+from ltoservices.system import systemService
 import uuid
 import hashlib
 import base64
@@ -21,6 +22,7 @@ class LTOArchive():
         self.domain = domainService( self )
         self.content = contentService( self )
         self.project = projectService( self )
+        self.system = systemService( self )
         self.job = jobService( self )
 
     

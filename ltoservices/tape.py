@@ -23,6 +23,12 @@ class tapeService(BaseService):
         return data["data"]
 
 
+    def clone( self, label, label2 ):
+        dt = {}
+        data = self.LTO.sendRequest( 'PATCH', "/api/v1/tape/%s/cloneto/%s" % ( label, label2 ), data=dt, auth=True )
+        return data["data"]
+
+
     def drop( self, label ):
         dt = {}
         data = self.LTO.sendRequest( 'DELETE', "/api/v1/tape/%s/drop" % ( label ), data=dt, auth=True )
