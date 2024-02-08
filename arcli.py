@@ -72,13 +72,13 @@ def domainCommands( settings ):
 def jobCommands( settings ):
     LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
     if settings.getCommand(1) == "list":
-        print( json.dumps( LTO.job.list(), indent=4 ) )
+        print( json.dumps( LTO.job.list(), indent=2 ) )
 
 
 def tapeCommands( settings ):
     LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
     if settings.getCommand(1) == "list":
-        print( json.dumps( LTO.tape.list(), indent=4 ) )
+        print( json.dumps( LTO.tape.list(), indent=2 ) )
 
     if settings.getCommand(1) == "add":
         if settings.getCommand(2) != "" and settings.get('copynumber') != "":
@@ -110,9 +110,9 @@ def projectCommands( settings ):
 def systemCommands( settings ):
     LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
     if settings.getCommand(1) == "destinations":
-        print( LTO.system.destinations() )
+        print( json.dumps( LTO.system.destinations(), indent=2 ) )
     elif settings.getCommand(1) == "tasks":
-        print( LTO.system.tasks() )
+        print( json.dumps( LTO.system.tasks(), indent = 2 ) )
 
 
 
