@@ -10,3 +10,17 @@ class jobService(BaseService):
         else:
             return None
 
+    def cont( self, jobid: int ) -> bool:
+        data = self.LTO.sendRequest('PATCH', "/api/v1/job/%d/continue" % jobid, None, None, True )
+        if ( data["status"] == 200 ):
+            return True
+        else:
+            return False
+
+    def pause( self, jobid: int ) -> bool:
+        data = self.LTO.sendRequest('PATCH', "/api/v1/job/%d/pause" % jobid, None, None, True )
+        if ( data["status"] == 200 ):
+            return True
+        else:
+            return False
+

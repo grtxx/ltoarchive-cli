@@ -1,142 +1,106 @@
 #!/usr/bin/python3.6m
 
-import sys
-import re
 import json
 from ltoarchive import LTOArchive
+from controllers.settings import Settings
 
 
 
-class Settings:
+class LTOArchiveClient:
+
     def __init__( self ):
-        self.settings = []
-        self.commands = []
-        self.cmdlineopts = [
-            { "short": "s", "long": "server", "default": "http://127.0.0.1" },
-            { "short": "p", "long": "port", "default": "8000" },
-            { "short": "n", "long": "copynumber", "default": "0" },
-            { "short": "d", "long": "domain", "default": "" }
-        ]
-        self.parseArgs()
+        self.settings = Settings()
+        self.LTO = LTOArchive( "%s:%s" % ( self.settings.get("server"), self.settings.get("port") ) )
 
-    def get( self, name ):
-        if name in self.settings:
-            return self.settings[ name ]
-        else:
-            return ""
-        
-    def getCommand( self, num ):
-        if num < len( self.commands ):
-            return self.commands[num]
-        else:
-            return ""
+    def domainCommands( self ):
+        if self.settings.getCommand(1) == "list":
+            print( self.LTO.domain.list() )
 
-    def parseArgs( self ):
-        self.settings = {}
-        self.commands = []
-        i = 1
-        for p in self.cmdlineopts:
-            if "default" in p:
-                self.settings[ p["long"] ] = p["default"]
-        while i < len( sys.argv ):
-            if ( sys.argv[i][:1] == "-" ):
-                for p in self.cmdlineopts:
-                    if ( sys.argv[i] == "-%s" % p["short"] ):
-                        if ( i + 1 < len( sys.argv ) ):
-                            self.settings[ p["long"] ] =  sys.argv[i+1]
-                        i = i + 1
-                    grps = re.match( r"--%s=(.*)$" % p["long"], sys.argv[i] )
-                    if ( grps ):
-                        self.settings[ p["long"] ] = grps.groups(1)[0]
+        if self.settings.getCommand(1) == "create":
+            if self.settings.getCommand(2) != "":
+                print( self.LTO.domain.create( self.settings.getCommand(2) ) )
+
+        if self.settings.getCommand(1) == "drop":
+            if self.settings.getCommand(2) != "":
+                print( self.LTO.domain.drop( self.settings.getCommand(2) ) )
+
+
+    def jobCommands( self ):
+        if self.settings.getCommand(1) == "list":
+            print( json.dumps( self.LTO.job.list(), indent=2 ) )
+            return True
+        elif self.settings.getCommand(1) == "continue":
+            if ( self.settings.getCommand(2) != "" ):
+                print( json.dumps( self.LTO.job.cont( int(self.settings.getCommand(2)) ), indent=2 ) )
             else:
-                self.commands.append( sys.argv[i] )
-            i = i + 1
-        pass
+                print( "Job ID is required" )
+            return True        
+        elif self.settings.getCommand(1) == "pause":
+            if ( self.settings.getCommand(2) != "" ):
+                print( json.dumps( self.LTO.job.pause( int(self.settings.getCommand(2)) ), indent=2 ) )
+            else:
+                print( "Job ID is required" )
+            return True
 
 
-
-def domainCommands( settings ):
-    LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
-    if settings.getCommand(1) == "list":
-        print( LTO.domain.list() )
-
-    if settings.getCommand(1) == "create":
-        if settings.getCommand(2) != "":
-            print( LTO.domain.create( settings.getCommand(2) ) )
-
-    if settings.getCommand(1) == "drop":
-        if settings.getCommand(2) != "":
-            print( LTO.domain.drop( settings.getCommand(2) ) )
-
-
-def jobCommands( settings ):
-    LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
-    if settings.getCommand(1) == "list":
-        print( json.dumps( LTO.job.list(), indent=2 ) )
-
-
-def tapeCommands( settings ):
-    LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
-    if settings.getCommand(1) == "list":
-        print( json.dumps( LTO.tape.list(), indent=2 ) )
-
-    if settings.getCommand(1) == "add":
-        if settings.getCommand(2) != "" and settings.get('copynumber') != "":
-            print( LTO.tape.create( settings.getCommand(2), settings.get('copynumber') ) )
-
-    if settings.getCommand(1) == "updatecontent":
-        print( LTO.tape.updateContent( settings.getCommand(2) ) )
-
-    if settings.getCommand(1) == "clone":
-        print( LTO.tape.clone( settings.getCommand(2), settings.getCommand(3) ) )
-
-    if settings.getCommand(1) == "drop":
-        if settings.getCommand(2) != "":
-            print( LTO.tape.drop( settings.getCommand(2) ) )
-
-    if settings.getCommand(1) == "workercount":
-        if ( settings.getCommand(2) == "get" ):
-            print( LTO.tape.getWorkerCount() )
-        elif ( settings.getCommand(2) == "set" ):
-            print( LTO.tape.setWorkerCount( settings.getCommand(3) ) )
+    def tapeCommands( self ):
+        if self.settings.getCommand(1) == "list":
+            print( json.dumps( self.LTO.tape.list(), indent=2 ) )
+            return True
+        elif self.settings.getCommand(1) == "add":
+            if self.settings.getCommand(2) != "" and self.settings.get('copynumber') != "":
+                print( self.LTO.tape.create( self.settings.getCommand(2), self.settings.get('copynumber') ) )
+                return True
+        elif self.settings.getCommand(1) == "updatecontent":
+            print( self.LTO.tape.updateContent( self.settings.getCommand(2) ) )
+            return True
+        elif self.settings.getCommand(1) == "clone":
+            print( self.LTO.tape.clone( self.settings.getCommand(2), self.settings.getCommand(3) ) )
+            return True
+        elif self.settings.getCommand(1) == "drop":
+            if self.settings.getCommand(2) != "":
+                print( self.LTO.tape.drop( self.settings.getCommand(2) ) )
+                return True
+        elif self.settings.getCommand(1) == "workercount":
+            if ( self.settings.getCommand(2) == "get" ):
+                print( self.LTO.tape.getWorkerCount() )
+                return True
+            elif ( self.settings.getCommand(2) == "set" ):
+                print( self.LTO.tape.setWorkerCount( self.settings.getCommand(3) ) )
+                return True
 
 
-def projectCommands( settings ):
-    LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
-    if settings.getCommand(1) == "check":
-        print( LTO.project.check( settings.get('domain'), settings.getCommand(2) ) )
+    def projectCommands( self ):
+        if self.settings.getCommand(1) == "check":
+            print( self.LTO.project.check( self.settings.get('domain'), self.settings.getCommand(2) ) )
 
 
-def systemCommands( settings ):
-    LTO = LTOArchive( "%s:%s" % ( settings.get("server"), settings.get("port") ) )
-    if settings.getCommand(1) == "destinations":
-        print( json.dumps( LTO.system.destinations(), indent=2 ) )
-    elif settings.getCommand(1) == "tasks":
-        print( json.dumps( LTO.system.tasks(), indent = 2 ) )
+    def systemCommands( self ):        
+        if self.settings.getCommand(1) == "destinations":
+            print( json.dumps( self.LTO.system.destinations(), indent=2 ) )
+            return True
+        elif self.settings.getCommand(1) == "tasks":
+            print( json.dumps( self.LTO.system.tasks(), indent = 2 ) )
+            return True
 
 
+    def router( self ):
+        ret = False
 
-def router():
-    settings = Settings()
-    if ( settings.getCommand(0) == "domain" ):
-        domainCommands( settings )
-    if ( settings.getCommand(0) == "tape" ):
-        tapeCommands( settings )
-    if ( settings.getCommand(0) == "project" ):
-        projectCommands( settings )
-    if ( settings.getCommand(0) == "job" ):
-        jobCommands( settings )
-    if ( settings.getCommand(0) == "system" ):
-        systemCommands( settings )
+        if ( self.settings.getCommand(0) == "domain" ):
+            ret = self.domainCommands()
+        elif ( self.settings.getCommand(0) == "tape" ):
+            ret = self.tapeCommands()
+        elif ( self.settings.getCommand(0) == "project" ):
+            ret = self.projectCommands()
+        elif ( self.settings.getCommand(0) == "job" ):
+            ret = self.jobCommands()
+        elif ( self.settings.getCommand(0) == "system" ):
+            ret = self.systemCommands()
 
-
-router()
-
-
+        if ( not ret == True ):
+            print( "Unknown command" )
 
 
-
-#LTO.archivedomain.create( "COMPACT_TV" )
-#print( LTO.archivedomain.list() )
-
-#print( LTO.content.getFolder( "UMBRELLA", "/tmp-2023-02/valami" ) )
+main = LTOArchiveClient()
+main.router()
